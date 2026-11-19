@@ -1,9 +1,3 @@
-"""
-Visor de cotizaciones de negocios cautivos.
-Lee las tablas migradas desde DB RAW (libro BASE_DE_DATOS_PROYECTO_CAUTIVOS_migrada.xlsx).
-
-Ejecutar:  streamlit run app.py
-"""
 from pathlib import Path
 
 import altair as alt
@@ -11,7 +5,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Negocios cautivos · Cotizaciones", page_icon="🚚", layout="wide")
+st.set_page_config(page_title="Negocios cautivos · Cotizaciones", page_icon="📃", layout="wide")
 
 ARCHIVO_DEFECTO = Path(__file__).parent / "BASE_DE_DATOS_PROYECTO_CAUTIVOS_migrada.xlsx"
 HOJAS = ["CLIENTES", "PROVEEDORES", "RUTAS", "TIPOS_UNIDAD", "COTIZACIONES", "DETALLE_SERVICIOS",
@@ -461,7 +455,7 @@ def pagina_calidad(t):
 # ------------------------------------------------------------------ arranque
 def main():
     with st.sidebar:
-        st.markdown("## 🚚 Negocios cautivos")
+        st.markdown("## Negocios cautivos")
         subido = st.file_uploader("Libro migrado (.xlsx)", type="xlsx", help="Si no subes nada se usa el archivo junto a app.py.")
     origen = subido if subido is not None else (ARCHIVO_DEFECTO if ARCHIVO_DEFECTO.exists() else None)
     if origen is None:

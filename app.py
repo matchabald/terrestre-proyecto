@@ -455,8 +455,8 @@ def pagina_calidad(t):
 # ------------------------------------------------------------------ arranque
 def main():
     with st.sidebar:
-        st.markdown("## Negocios cautivos")
-        subido = st.file_uploader("Libro migrado (.xlsx)", type="xlsx", help="Si no subes nada se usa el archivo junto a app.py.")
+        st.markdown("## Soporte - Negocios cautivos")
+        subido = st.file_uploader("PDF cotizaciones", type="pdf", help="Si no subes nada se usa el archivo junto a app.py.")
     origen = subido if subido is not None else (ARCHIVO_DEFECTO if ARCHIVO_DEFECTO.exists() else None)
     if origen is None:
         st.warning(f"Sube el libro migrado o colócalo junto a app.py con el nombre {ARCHIVO_DEFECTO.name}.")

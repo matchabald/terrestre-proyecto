@@ -11,10 +11,10 @@ ARCHIVO_DEFECTO = Path(__file__).parent / "BASE_DE_DATOS_PROYECTO_CAUTIVOS_migra
 HOJAS = ["CLIENTES", "PROVEEDORES", "RUTAS", "TIPOS_UNIDAD", "COTIZACIONES", "DETALLE_SERVICIOS",
          "PROVEEDORES_COTIZACION", "CONDICIONES_CARGOS", "PENDIENTES_REVISION", "CONTROL_COBERTURA", "DICCIONARIO_DATOS"]
 TOL = 0.02
-NUM_FMT = "%.2f"  # sin símbolo de moneda: el origen casi nunca la indica
+NUM_FMT = "%.2f"  # Es siempre en dolar o hay variación en cordobas / otra moneda? confirmar con ker. 
 
 
-# ------------------------------------------------------------------ carga
+# ------------------------------------------------------------------ carga de datos  (Funcion piloto)
 @st.cache_data(show_spinner="Leyendo el libro…")
 def cargar(origen) -> dict:
     hojas = pd.read_excel(origen, sheet_name=HOJAS, dtype=object)
@@ -217,7 +217,7 @@ def filtros_cotizaciones(t, clave="f"):
 def pagina_resumen(t):
     cot, pend = t["cot"], t["pend"]
     st.title("Resumen de negocios cautivos")
-    st.caption("Datos migrados desde la hoja DB RAW. Los importes se muestran sin símbolo de moneda porque el origen casi nunca la indica.")
+    st.caption("Datos migrados desde la hoja DB RAW. Los importes se muestran sin símbolo de moneda pendiente de confirmar")
     c = st.columns(5)
     c[0].metric("Cotizaciones", len(cot))
     c[1].metric("Clientes", cot["id_cliente"].nunique())
@@ -229,13 +229,13 @@ def pagina_resumen(t):
     a.altair_chart(barras(cot, "estado_completitud", "¿Están completas las cotizaciones?"), width="stretch")
     b.altair_chart(barras(cot, "estado_conciliacion", "¿Cuadra el detalle con el total original?"), width="stretch")
 
-    st.subheader("Cotizaciones por cliente")
+    st.subheader("Licitaciones por cliente")
     top = cot.groupby("cliente").agg(cotizaciones=("id_cotizacion", "count")).reset_index().sort_values("cotizaciones", ascending=False)
     st.altair_chart(alt.Chart(top.head(15)).mark_bar(color="#1F4E78", cornerRadiusEnd=3)
                     .encode(y=alt.Y("cliente:N", sort="-x", title=None, axis=alt.Axis(labelLimit=420)), x=alt.X("cotizaciones:Q", title="Cotizaciones"),
                             tooltip=["cliente", "cotizaciones"]).properties(height=420), width="stretch")
 
-    st.subheader("Margen base de las cotizaciones completas")
+    st.subheader("Margen base de las licitaciones completas")
     comp = cot[cot["margen_base_pct"].notna()]
     st.caption("Solo cotizaciones con costo y venta completos. Margen = (venta base − costo base) / venta base.")
     st.altair_chart(alt.Chart(comp).mark_circle(size=70, opacity=0.75)
@@ -335,8 +335,7 @@ def pagina_cotizaciones(t):
 
 def pagina_comparar(t):
     st.title("Comparar alternativas")
-    st.caption("Solo se comparan cotizaciones con la misma ruta y la misma unidad. Cada columna es una alternativa completa: "
-               "sus servicios no se mezclan con los de otra.")
+    st.caption("Solo se comparan cotizaciones con la misma ruta y la misma unidad.")
     cot = t["cot"][t["cot"]["id_ruta"].notna()].copy()
     cot["ruta_unidad"] = cot["origen"] + " → " + cot["destino"] + "  |  " + cot["unidad"].fillna("unidad no indicada")
     entre = st.toggle("Comparar entre clientes distintos", help="Por defecto solo se comparan alternativas del mismo cliente.")
@@ -353,7 +352,7 @@ def pagina_comparar(t):
     g = c1.selectbox("Grupo comparable", lista.index, format_func=lambda x: f"{x}  ({lista[x]} alternativas)")
     alts = grupos[grupos["grupo"] == g].sort_values("venta_base")
     if alts["variante"].nunique(dropna=False) > 1 or alts["cliente"].nunique() > 1:
-        st.warning("El grupo tiene variantes o clientes distintos; revisa esas filas antes de comparar precios.")
+        st.warning("El grupo tiene variantes o clientes distintos; revisar esas filas antes de comparar precios.")
 
     etiquetas = {"cliente": "Cliente", "variante": "Variante", "proveedores": "Proveedores", "dias_libres": "Días libres",
                  "costo_base": "Costo base", "venta_base": "Venta base", "utilidad_base": "Utilidad base", "margen_base_pct": "Margen base",
